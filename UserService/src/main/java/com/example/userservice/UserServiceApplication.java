@@ -9,7 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 // Testing CI and CD workflow
-// Testing CI and CD worflow 5
+// Testing CI and CD worflow 6
+
 @SpringBootApplication
 public class UserServiceApplication implements CommandLineRunner {
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
