@@ -18,6 +18,9 @@ jobs:
       - name: Build JAR
         run: cd UserService && mvn clean package -DskipTests
 
+      - name: List target folder
+        run: ls UserService/target/
+
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/login-action@v3
