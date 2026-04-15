@@ -12,7 +12,7 @@
     <artifactId>DiscoveryService</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>DiscoveryService</name>
-<!--    <description>DiscoveryService</description>-->
+<!--   . <description>DiscoveryService</description>-->
     <properties>
         <java.version>21</java.version>
     </properties>
