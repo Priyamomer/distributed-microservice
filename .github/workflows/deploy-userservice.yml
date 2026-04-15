@@ -35,6 +35,18 @@ jobs:
           push: true
           tags: stargazingsparrow/userservice:latest
 
+      # --- NEW STEP: Securely copy the docker-compose.yml file to your VPS ---
+      - name: Copy docker-compose file to VPS
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: root
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          source: "UserService/docker-compose.yml"
+          target: "~/services/userservice"
+          strip_components: 1
+
+      # --- UPDATED STEP: SSH into the server to apply secrets and restart ---
       - uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HETZNER_HOST }}
@@ -44,17 +56,17 @@ jobs:
             # 1. Navigate to the working directory on the VPS
             cd ~/services/userservice
             
-            # 2. Generate the .env file with keys matching docker-compose.yml
-            # and values mapping to your GitHub Secrets.
-            echo "SERVER_PORT=${{ secrets.USERSERVICE_SERVER_PORT }}" > .env
-            echo "SPRING_DATASOURCE_URL=${{ secrets.USERSERVICE_DATASOURCE_URL }}" >> .env
-            echo "SPRING_DATASOURCE_USERNAME=${{ secrets.USERSERVICE_DATASOURCE_USERNAME }}" >> .env
-            echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.USERSERVICE_DATASOURCE_PASSWORD }}" >> .env
-            echo "SPRING_JPA_HIBERNATE_DDL_AUTO=${{ secrets.USERSERVICE_JPA_DDL_AUTO }}" >> .env
-            echo "EUREKA=${{ secrets.USERSERVICE_EUREKA }}" >> .env
-            echo "EUREKA_INSTANCE_HOSTNAME=${{ secrets.USERSERVICE_EUREKA_HOSTNAME }}" >> .env
-            echo "REDIS_HOST=${{ secrets.USERSERVICE_REDIS_HOST }}" >> .env
-            echo "REDIS_PORT=${{ secrets.USERSERVICE_REDIS_PORT }}" >> .env
+            # 2. Generate the .env file with keys matching docker-compose.yml.
+            # Using single quotes to strictly protect passwords with special characters.
+            echo 'SERVER_PORT=${{ secrets.USERSERVICE_SERVER_PORT }}' > .env
+            echo 'SPRING_DATASOURCE_URL=${{ secrets.USERSERVICE_DATASOURCE_URL }}' >> .env
+            echo 'SPRING_DATASOURCE_USERNAME=${{ secrets.USERSERVICE_DATASOURCE_USERNAME }}' >> .env
+            echo 'SPRING_DATASOURCE_PASSWORD=${{ secrets.USERSERVICE_DATASOURCE_PASSWORD }}' >> .env
+            echo 'SPRING_JPA_HIBERNATE_DDL_AUTO=${{ secrets.USERSERVICE_JPA_DDL_AUTO }}' >> .env
+            echo 'EUREKA=${{ secrets.USERSERVICE_EUREKA }}' >> .env
+            echo 'EUREKA_INSTANCE_HOSTNAME=${{ secrets.USERSERVICE_EUREKA_HOSTNAME }}' >> .env
+            echo 'REDIS_HOST=${{ secrets.USERSERVICE_REDIS_HOST }}' >> .env
+            echo 'REDIS_PORT=${{ secrets.USERSERVICE_REDIS_PORT }}' >> .env
             
             # 3. Restrict permissions so only root can read the secrets
             chmod 600 .env
