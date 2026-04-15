@@ -1,6 +1,6 @@
 FROM eclipse-temurin:21-jre
 
-COPY target/ProductService-0.0.1-SNAPSHOT.jar productservice.jar
+COPY target/*.jar productservice.jar
 
 EXPOSE 8300
 
