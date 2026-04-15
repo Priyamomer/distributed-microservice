@@ -41,6 +41,26 @@ jobs:
           username: root
           key: ${{ secrets.HETZNER_SSH_KEY }}
           script: |
+            # 1. Navigate to the working directory on the VPS
+            cd ~/services/userservice
+            
+            # 2. Securely write all Github Secrets to a .env file.
+            # Using '>' for the first line overwrites any old .env file.
+            # Using '>>' appends the rest of the variables.
+            echo "DATASOURCE_PASSWORD=${{ secrets.USERSERVICE_DATASOURCE_PASSWORD }}" > .env
+            echo "DATASOURCE_URL=${{ secrets.USERSERVICE_DATASOURCE_URL }}" >> .env
+            echo "DATASOURCE_USERNAME=${{ secrets.USERSERVICE_DATASOURCE_USERNAME }}" >> .env
+            echo "EUREKA=${{ secrets.USERSERVICE_EUREKA }}" >> .env
+            echo "EUREKA_HOSTNAME=${{ secrets.USERSERVICE_EUREKA_HOSTNAME }}" >> .env
+            echo "JPA_DDL_AUTO=${{ secrets.USERSERVICE_JPA_DDL_AUTO }}" >> .env
+            echo "REDIS_HOST=${{ secrets.USERSERVICE_REDIS_HOST }}" >> .env
+            echo "REDIS_PORT=${{ secrets.USERSERVICE_REDIS_PORT }}" >> .env
+            echo "SERVER_PORT=${{ secrets.USERSERVICE_SERVER_PORT }}" >> .env
+            
+            # 3. Restrict file permissions for security (only root can read/write)
+            chmod 600 .env
+            
+            # 4. Pull the new image and deploy
             docker pull stargazingsparrow/userservice:latest
-            docker rm -f userservice
-            cd ~/services/userservice && docker-compose up -d
+            docker-compose down # Cleaner than just rm -f, ensures network/volume cleanup
+            docker-compose up -d
