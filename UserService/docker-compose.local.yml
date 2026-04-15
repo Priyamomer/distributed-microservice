@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   userservice:
-    image: stargazingsparrow/userservice:latest
+    build: .
     container_name: userservice
     ports:
       - "8200:8200"
