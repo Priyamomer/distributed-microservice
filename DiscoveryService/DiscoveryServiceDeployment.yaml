@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discoveryservice
+  labels:
+    app: discoveryservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discoveryservice
+  template:
+    metadata:
+      name: discoveryservice
+      labels:
+        app: discoveryservice
+    spec:
+      containers:
+        - name: discoveryservice
+          image: priyamomer/discoveryservice:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8100
+              protocol: TCP
+          env:
+            - name: POD_IP
+              valueFrom:
+                  fieldRef:
+                    fieldPath: status.podIP
+      restartPolicy: Always

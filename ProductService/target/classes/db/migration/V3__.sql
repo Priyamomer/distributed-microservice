@@ -1,0 +1,17 @@
+ALTER TABLE price
+    ADD amount INT NULL;
+
+ALTER TABLE price
+    MODIFY amount INT NOT NULL;
+
+ALTER TABLE price
+DROP
+COLUMN currency2;
+
+ALTER TABLE price
+DROP
+COLUMN haha;
+
+ALTER TABLE price
+DROP
+COLUMN value;

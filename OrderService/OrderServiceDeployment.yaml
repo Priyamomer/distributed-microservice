@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orderservice
+  labels:
+    app: orderservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orderservice
+  template:
+    metadata:
+      name: orderservice
+      labels:
+        app: orderservice
+    spec:
+      containers:
+        - name: orderservice
+          image: priyamomer/orderservice:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8500
+              protocol: TCP
+          env:
+            - name: POD_IP
+              valueFrom:
+                  fieldRef:
+                    fieldPath: status.podIP
+      restartPolicy: Always

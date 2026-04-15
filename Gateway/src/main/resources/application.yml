@@ -1,0 +1,260 @@
+management:
+  health:
+    redis:
+      enabled: ${MANAGEMENT_HEALTH_REDIS_ENABLED:true}
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      base-path: /actuator
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+    web:
+      server:
+        auto-time-requests: true
+        request:
+          autotime:
+            enabled: true
+    observations:
+      annotations:
+        enabled: true
+
+
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:Gateway}
+  main:
+    web-application-type: ${SPRING_MAIN_WEB-APPLICATION-TYPE:reactive}
+    allow-bean-definition-overriding: ${SPRING_MAIN_ALLOW-BEAN-DEFINITION-OVERRIDING:true}
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false
+    gateway:
+      metrics:
+        enabled: true
+      routes:
+        # USER SERVICE
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[0]_ID:auth-signup-password}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[0]_PREDICATES[0]:/v1/auth/**}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[0]_PREDICATES[1]:POST}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[0]_URI:lb://userservice}
+
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[1]_ID:roles-get}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[1]_PREDICATES[0]:/v1/roles/**}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[1]_PREDICATES[1]:GET}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[1]_URI:lb://userservice}
+          filters:
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[1]_FILTERS[1]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[1]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[1]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[2]_ID:roles-post}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[2]_PREDICATES[0]:/v1/roles/**}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[2]_PREDICATES[1]:POST}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[2]_URI:lb://userservice}
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[2]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[2]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[2]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[3]_ID:user-get}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[3]_PREDICATES[0]:/v1/users/**}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[3]_PREDICATES[1]:GET}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[3]_URI:lb://userservice}
+          filters:
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[3]_FILTERS[1]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[3]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[3]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[4]_ID:user-roles-post}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[4]_PREDICATES[0]:/v1/users/**}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[4]_PREDICATES[1]:POST}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[4]_URI:lb://userservice}
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[4]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[4]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[4]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
+        # PRODUCT SERVICE
+        - id: productserviceforwarding
+          predicates:
+            - Path=/v1/products/**
+            - Method=GET
+          uri: lb://productservice
+          filters:
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:3}
+
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_ID:productserviceforwarding-post-patch-delete}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[6]_PREDICATES[0]:/v1/products/**}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[6]_PREDICATES[1]:POST,PATCH,DELETE}
+          uri: lb://productservice
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
+        # CART SERVICE
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_ID:cartservice-get}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[7]_PREDICATES[0]:/v1/cart/**}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[7]_PREDICATES[1]:GET}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_URI:lb://cartservice}
+          filters:
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_FILTERS[1]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_ID:cartservice-post-patch-delete}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[8]_PREDICATES[0]:/v1/cart/**}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[8]_PREDICATES[1]:POST,PATCH,DELETE}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_URI:lb://cartservice}
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
+        # ORDER SERVICE
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[9]_ID:orderservice-get}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[9]_PREDICATES[0]:/v1/orders/**}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[9]_PREDICATES[1]:GET}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[9]_URI:lb://orderservice}
+          filters:
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[9]_FILTERS[1]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[9]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[9]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[10]_ID:orderservice-post-patch}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[10]_PREDICATES[0]:/v1/orders/**}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[10]_PREDICATES[1]:POST,PATCH}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[10]_URI:lb://orderservice}
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[10]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[10]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[10]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
+        # PAYMENT SERVICE
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[11]_ID:paymentservice-post}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[11]_PREDICATES[0]:/v1/payments}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[11]_PREDICATES[1]:POST}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[11]_URI:lb://paymentservice}
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[11]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[11]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[11]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_ID:paymentservice-webhooks}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[12]_PREDICATES[0]:/v1/payments/webhooks}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[12]_PREDICATES[1]:POST}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_URI:lb://paymentservice}
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+        # NOTIFICATION SERVICE
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_ID:notificationservice-post}
+          predicates:
+            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[13]_PREDICATES[0]:/v1/notifications/send-message}
+            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[13]_PREDICATES[1]:POST}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_URI:lb://notificationservice}
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
+
+  security:
+    oauth2:
+      client:
+        registration:
+          gateway:
+            provider: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_PROVIDER:my-provider}
+            client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_CLIENT-ID:GW2}
+            client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_CLIENT-SECRET:GW2Secret}
+            authorization-grant-type: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_AUTHORIZATION-GRANT-TYPE:authorization_code}
+            scope:
+              - ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_SCOPE:openid}
+            redirect-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_REDIRECT-URI:http://localhost:8000/login/oauth2/code/gateway}
+        provider:
+          my-provider:
+            issuer-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MY-PROVIDER_ISSUER-URI:http://localhost:8200}
+            authorization-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MY-PROVIDER_AUTHORIZATION-URI:http://localhost:8200/oauth2/authorize}
+            token-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MY-PROVIDER_TOKEN-URI:http://localhost:8200/oauth2/token}
+
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+
+server:
+  port: ${SERVER_PORT:8000}
+
+eureka:
+  client:
+    register-with-eureka: ${EUREKA_CLIENT_REGISTER-WITH-EUREKA:true}
+    fetch-registry: ${EUREKA_CLIENT_FETCH-REGISTRY:true}
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE:http://localhost:8100/eureka}
+  instance:
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
+    instanceId: ${EUREKA_INSTANCE_HOSTNAME:localhost}:${SERVER_PORT:8000}
+    preferIpAddress: false
+
+logging:
+  level:
+    org.springframework.cloud.gateway.filter.ratelimit: ${LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY_FILTER_RATELIMIT:DEBUG}
+    org.springframework.data.redis: ${LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_DATA_REDIS:DEBUG}
+

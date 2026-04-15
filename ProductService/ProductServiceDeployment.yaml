@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: productservice
+  labels:
+    app: productservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: productservice
+  template:
+    metadata:
+      name: productservice
+      labels:
+        app: productservice
+    spec:
+      containers:
+        - name: productservice
+          image: priyamomer/productservice:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8300
+              protocol: TCP
+          env:
+            - name: POD_IP
+              valueFrom:
+                  fieldRef:
+                    fieldPath: status.podIP
+      restartPolicy: Always
+

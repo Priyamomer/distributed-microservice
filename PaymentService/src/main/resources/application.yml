@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: PaymentService
+  datasource:
+    url: jdbc:mysql://localhost:3306/paymentservice
+    username: user99
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      password: password
+  jpa:
+    show-sql: true
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false
+
+server:
+  port: 8600
+
+logging:
+  level:
+    org.springframework.security: trace
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8100/eureka
+    fetch-registry: true
+    register-with-eureka: true
+#  instance:
+#    prefer-ip-address: true
+#    instance-id: ${spring.application.name}:${server.port}
+#    hostname: localhost

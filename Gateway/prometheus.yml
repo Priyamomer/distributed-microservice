@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: 'gw-monitoring'
+    metrics_path: '/actuator/prometheus'
+    eureka_sd_configs:
+      - server: 'http://host.docker.internal:8100/eureka'
+    relabel_configs:
+      - source_labels: [__meta_eureka_app_name]
+        regex: 'GATEWAY'
+        action: 'keep'
+      - source_labels: [__address__]
+        regex: 'host\.docker\.internal(:.*)'
+        replacement: 'localhost${1}'
+        target_label: __address__
+      - source_labels: [__address__]
+        target_label: instance

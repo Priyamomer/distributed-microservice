@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paymentservice
+  labels:
+    app: paymentservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: paymentservice
+  template:
+    metadata:
+      name: paymentservice
+      labels:
+        app: paymentservice
+    spec:
+      containers:
+        - name: paymentservice
+          image: priyamomer/paymentservice:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8600
+              protocol: TCP
+          env:
+            - name: POD_IP
+              valueFrom:
+                  fieldRef:
+                    fieldPath: status.podIP
+      restartPolicy: Always

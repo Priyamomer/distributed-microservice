@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  userservice:
+    build: .
+    container_name: userservice
+    ports:
+      - "8200:8200"
+    environment:
+      SERVER_PORT: 8200
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/userservice
+      SPRING_DATASOURCE_USERNAME: user99
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      EUREKA: http://host.docker.internal:8100/eureka
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      REDIS_HOST: host.docker.internal
+      REDIS_PORT: 6379

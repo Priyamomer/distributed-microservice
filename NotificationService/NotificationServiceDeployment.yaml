@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notificationservice
+  labels:
+    app: notificationservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notificationservice
+  template:
+    metadata:
+      name: notificationservice
+      labels:
+        app: notificationservice
+    spec:
+      containers:
+        - name: notificationservice
+          image: priyamomer/notificationservice:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8700
+              protocol: TCP
+          env:
+            - name: POD_IP
+              valueFrom:
+                  fieldRef:
+                    fieldPath: status.podIP
+      restartPolicy: Always
