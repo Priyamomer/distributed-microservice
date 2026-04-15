@@ -1,26 +1,33 @@
 name: Deploy UserService
+
 on:
   push:
     branches: [main]
     paths: ['UserService/**']
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
+      # ── 1. Checkout ──────────────────────────────────────────────
       - uses: actions/checkout@v3
 
+      # ── 2. Java 21 ───────────────────────────────────────────────
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'temurin'
 
+      # ── 3. Build ─────────────────────────────────────────────────
       - name: Build JAR
         run: cd UserService && mvn clean package -DskipTests
 
       - name: List target folder
         run: ls UserService/target/
 
+      # ── 4. Docker build & push ───────────────────────────────────
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/login-action@v3
@@ -35,7 +42,7 @@ jobs:
           push: true
           tags: stargazingsparrow/userservice:latest
 
-      # --- NEW STEP: Securely copy the docker-compose.yml file to your VPS ---
+      # ── 5. Copy docker-compose to VPS ────────────────────────────
       - name: Copy docker-compose file to VPS
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -46,32 +53,31 @@ jobs:
           target: "~/services/userservice"
           strip_components: 1
 
-      # --- UPDATED STEP: SSH into the server to apply secrets and restart ---
+      # ── 6. Write .env, pull image, restart ───────────────────────
       - uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HETZNER_HOST }}
           username: root
           key: ${{ secrets.HETZNER_SSH_KEY }}
           script: |
-            # 1. Navigate to the working directory on the VPS
             cd ~/services/userservice
-            
-            # 2. Generate the .env file with keys matching docker-compose.yml.
-            # Using single quotes to strictly protect passwords with special characters.
-            echo 'SERVER_PORT=${{ secrets.USERSERVICE_SERVER_PORT }}' > .env
-            echo 'SPRING_DATASOURCE_URL=${{ secrets.USERSERVICE_DATASOURCE_URL }}' >> .env
-            echo 'SPRING_DATASOURCE_USERNAME=${{ secrets.USERSERVICE_DATASOURCE_USERNAME }}' >> .env
-            echo 'SPRING_DATASOURCE_PASSWORD=${{ secrets.USERSERVICE_DATASOURCE_PASSWORD }}' >> .env
-            echo 'SPRING_JPA_HIBERNATE_DDL_AUTO=${{ secrets.USERSERVICE_JPA_DDL_AUTO }}' >> .env
-            echo 'EUREKA=${{ secrets.USERSERVICE_EUREKA }}' >> .env
-            echo 'EUREKA_INSTANCE_HOSTNAME=${{ secrets.USERSERVICE_EUREKA_HOSTNAME }}' >> .env
-            echo 'REDIS_HOST=${{ secrets.USERSERVICE_REDIS_HOST }}' >> .env
-            echo 'REDIS_PORT=${{ secrets.USERSERVICE_REDIS_PORT }}' >> .env
-            
-            # 3. Restrict permissions so only root can read the secrets
+
+            # ${{ secrets.* }} is expanded by the Actions runner BEFORE
+            # the script is sent over SSH, so double quotes are correct here.
+            printf '%s\n' \
+              "SERVER_PORT=${{ secrets.USERSERVICE_SERVER_PORT }}" \
+              "SPRING_DATASOURCE_URL=${{ secrets.USERSERVICE_DATASOURCE_URL }}" \
+              "SPRING_DATASOURCE_USERNAME=${{ secrets.USERSERVICE_DATASOURCE_USERNAME }}" \
+              "SPRING_DATASOURCE_PASSWORD=${{ secrets.USERSERVICE_DATASOURCE_PASSWORD }}" \
+              "SPRING_JPA_HIBERNATE_DDL_AUTO=${{ secrets.USERSERVICE_JPA_DDL_AUTO }}" \
+              "EUREKA=${{ secrets.USERSERVICE_EUREKA }}" \
+              "EUREKA_INSTANCE_HOSTNAME=${{ secrets.USERSERVICE_EUREKA_HOSTNAME }}" \
+              "REDIS_HOST=${{ secrets.USERSERVICE_REDIS_HOST }}" \
+              "REDIS_PORT=${{ secrets.USERSERVICE_REDIS_PORT }}" \
+              > .env
+
             chmod 600 .env
-            
-            # 4. Pull the latest image and do a clean restart
+
             docker pull stargazingsparrow/userservice:latest
-            docker-compose down 
+            docker-compose down
             docker-compose up -d
