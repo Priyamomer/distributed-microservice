@@ -50,4 +50,16 @@ jobs:
             echo "SPRING_DATASOURCE_URL=${{ secrets.USERSERVICE_DATASOURCE_URL }}" >> .env
             echo "SPRING_DATASOURCE_USERNAME=${{ secrets.USERSERVICE_DATASOURCE_USERNAME }}" >> .env
             echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.USERSERVICE_DATASOURCE_PASSWORD }}" >> .env
-            echo "SPRING_JPA_HIBERNATE_DDL_AUTO=${{ secrets.USERSER
+            echo "SPRING_JPA_HIBERNATE_DDL_AUTO=${{ secrets.USERSERVICE_JPA_DDL_AUTO }}" >> .env
+            echo "EUREKA=${{ secrets.USERSERVICE_EUREKA }}" >> .env
+            echo "EUREKA_INSTANCE_HOSTNAME=${{ secrets.USERSERVICE_EUREKA_HOSTNAME }}" >> .env
+            echo "REDIS_HOST=${{ secrets.USERSERVICE_REDIS_HOST }}" >> .env
+            echo "REDIS_PORT=${{ secrets.USERSERVICE_REDIS_PORT }}" >> .env
+            
+            # 3. Restrict permissions so only root can read the secrets
+            chmod 600 .env
+            
+            # 4. Pull the latest image and do a clean restart
+            docker pull stargazingsparrow/userservice:latest
+            docker-compose down 
+            docker-compose up -d
