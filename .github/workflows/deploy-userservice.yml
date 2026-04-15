@@ -1,0 +1,30 @@
+name: Deploy UserService
+on:
+  push:
+    branches: [main]
+    paths: ['UserService/**']
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./UserService
+          platforms: linux/amd64
+          push: true
+          tags: stargazingsparrow/userservice:latest
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: root
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            docker pull stargazingsparrow/userservice:latest
+            docker rm -f userservice
+            cd ~/services/userservice && docker-compose up -d
