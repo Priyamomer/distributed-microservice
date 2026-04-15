@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+// Testing CI and CD workflow
 @SpringBootApplication
 public class UserServiceApplication implements CommandLineRunner {
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
