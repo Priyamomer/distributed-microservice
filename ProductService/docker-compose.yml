@@ -4,8 +4,6 @@ services:
   productservice:
     image: stargazingsparrow/productservice:latest
     container_name: productservice
-    ports:
-      - "8300:8300"
     environment:
       SERVER_PORT: ${SERVER_PORT}
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}

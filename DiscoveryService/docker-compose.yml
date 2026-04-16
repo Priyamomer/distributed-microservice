@@ -4,8 +4,6 @@ services:
   discoveryservice:
     image: stargazingsparrow/discoveryservice:latest
     container_name: discoveryservice
-    ports:
-      - "8100:8100"
     environment:
       SERVER_PORT: ${SERVER_PORT}
       EUREKA_INSTANCE_HOSTNAME: ${EUREKA_INSTANCE_HOSTNAME}
