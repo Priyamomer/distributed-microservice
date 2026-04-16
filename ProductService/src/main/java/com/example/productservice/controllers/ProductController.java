@@ -42,6 +42,7 @@ public class ProductController {
     }
     @PostMapping()
     public GenericProductDto createProduct(@RequestBody GenericProductDto genericProductDto){
+        System.out.println("Creating product");
         return productService.createProduct(genericProductDto);
     }
     @PatchMapping()
