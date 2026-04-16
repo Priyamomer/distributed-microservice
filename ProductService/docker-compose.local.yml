@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  productservice:
+    build: .
+    container_name: productservice
+    ports:
+      - "8300:8300"
+    environment:
+      SERVER_PORT: 8300
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/productservice
+      SPRING_DATASOURCE_USERNAME: user99
+      SPRING_DATASOURCE_PASSWORD: password
+      RESOURCE_SERVER: http://localhost:8200
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK: http://host.docker.internal:8200/oauth2/jwks
+      EUREKA: http://host.docker.internal:8100/eureka
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      ELASTIC_SEARCH_URI: http://host.docker.internal:9200
+      REDIS_HOST: host.docker.internal
+      REDIS_PORT: 6379
