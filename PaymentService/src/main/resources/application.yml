@@ -6,7 +6,7 @@ spring:
     username: user99
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      password: password
+      password: ${SPRING_DATASOURCE_PASSWORD:password}
   jpa:
     show-sql: true
   cloud:
