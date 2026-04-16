@@ -3,7 +3,7 @@ package com.example.discoveryservice;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
-
+// CI and CD discovery-service testing
 @SpringBootApplication
 @EnableEurekaServer
 public class DiscoveryServiceApplication {

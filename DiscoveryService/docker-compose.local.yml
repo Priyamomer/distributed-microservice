@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  discoveryservice:
+    build: .
+    container_name: discoveryservice
+    ports:
+      - "8100:8100"
+    environment:
+      SERVER_PORT: 8100
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://host.docker.internal:8100/eureka
+      EUREKA_CLIENT_REGISTER-WITH-EUREKA: "false"
+      EUREKA_CLIENT_FETCH-REGISTRY: "false"
