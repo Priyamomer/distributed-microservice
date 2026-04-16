@@ -5,7 +5,7 @@ services:
     image: stargazingsparrow/gateway:latest
     container_name: gateway
     ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
+      - "8000:8000"
     environment:
       SERVER_PORT: ${SERVER_PORT}
       SPRING_APPLICATION_NAME: Gateway
