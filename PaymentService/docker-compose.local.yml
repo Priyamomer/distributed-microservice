@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  paymentservice:
+    build: .
+    container_name: paymentservice
+    ports:
+      - "8600:8600"
+    environment:
+      SERVER_PORT: 8600
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/paymentservice
+      SPRING_DATASOURCE_USERNAME: user99
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://host.docker.internal:8100/eureka
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8200
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:8200/oauth2/jwks

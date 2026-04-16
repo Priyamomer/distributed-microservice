@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  orderservice:
+    build: .
+    container_name: orderservice
+    ports:
+      - "8500:8500"
+    environment:
+      SERVER_PORT: 8500
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/orderservice
+      SPRING_DATASOURCE_USERNAME: user99
+      EUREKA: http://host.docker.internal:8100/eureka
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8200
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:8200/oauth2/jwks

@@ -1,0 +1,62 @@
+name: Deploy OrderService
+
+on:
+  push:
+    branches: [main]
+    paths: ['OrderService/**']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Build JAR
+        run: cd OrderService && mvn clean package -DskipTests
+      - name: List target folder
+        run: ls OrderService/target/
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./OrderService
+          platforms: linux/amd64
+          push: true
+          tags: stargazingsparrow/orderservice:latest
+      - name: Copy docker-compose file to VPS
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: root
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          source: "OrderService/docker-compose.yml"
+          target: "~/services/orderservice"
+          strip_components: 1
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: root
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            cd ~/services/orderservice
+            printf '%s\n' \
+              "SERVER_PORT=${{ secrets.ORDERSERVICE_SERVER_PORT }}" \
+              "SPRING_DATASOURCE_URL=${{ secrets.ORDERSERVICE_DATASOURCE_URL }}" \
+              "SPRING_DATASOURCE_USERNAME=${{ secrets.ORDERSERVICE_DATASOURCE_USERNAME }}" \
+              "SPRING_DATASOURCE_PASSWORD=${{ secrets.ORDERSERVICE_DATASOURCE_PASSWORD }}" \
+              "EUREKA=${{ secrets.ORDERSERVICE_EUREKA_URL }}" \
+              "EUREKA_INSTANCE_HOSTNAME=${{ secrets.ORDERSERVICE_EUREKA_HOSTNAME }}" \
+              "JWK_URI=${{ secrets.ORDERSERVICE_JWK_URI }}" \
+              "ISSUER_URI=${{ secrets.ORDERSERVICE_ISSUER_URI }}" \
+              > .env
+            chmod 600 .env
+            docker pull stargazingsparrow/orderservice:latest
+            docker-compose down
+            docker-compose up -d

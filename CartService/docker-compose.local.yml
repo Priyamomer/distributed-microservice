@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  cartservice:
+    build: .
+    container_name: cartservice
+    ports:
+      - "8400:8400"
+    environment:
+      SERVER_PORT: 8400
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/cartservice
+      SPRING_DATASOURCE_USERNAME: user99
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8200
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:8200/oauth2/jwks
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://host.docker.internal:8100/eureka
+      SPRING_ELASTICSEARCH_URIS: http://host.docker.internal:9200

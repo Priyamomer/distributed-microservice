@@ -2,14 +2,18 @@ version: '3.8'
 
 services:
   notificationservice:
-    build: .
+    image: stargazingsparrow/notificationservice:latest
     container_name: notificationservice
-    ports:
-      - "8700:8700"
     environment:
-      SERVER_PORT: 8700
-      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: host.docker.internal:9092
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://host.docker.internal:8100/eureka
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8200
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:8200/oauth2/jwks
+      SERVER_PORT: ${SERVER_PORT}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: ${EUREKA}
+      EUREKA_INSTANCE_HOSTNAME: ${EUREKA_INSTANCE_HOSTNAME}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: ${ISSUER_URI}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: ${JWK_URI}
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    external: true

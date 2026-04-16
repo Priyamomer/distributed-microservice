@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  notificationservice:
+    build: .
+    container_name: notificationservice
+    ports:
+      - "8700:8700"
+    environment:
+      SERVER_PORT: 8700
+      EUREKA_INSTANCE_HOSTNAME: host.docker.internal
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: host.docker.internal:9092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://host.docker.internal:8100/eureka
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8200
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:8200/oauth2/jwks

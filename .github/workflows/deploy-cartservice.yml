@@ -1,0 +1,65 @@
+name: Deploy CartService
+
+on:
+  push:
+    branches: [main]
+    paths: ['CartService/**']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Build JAR
+        run: cd CartService && mvn clean package -DskipTests
+      - name: List target folder
+        run: ls CartService/target/
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./CartService
+          platforms: linux/amd64
+          push: true
+          tags: stargazingsparrow/cartservice:latest
+      - name: Copy docker-compose file to VPS
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: root
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          source: "CartService/docker-compose.yml"
+          target: "~/services/cartservice"
+          strip_components: 1
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: root
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            cd ~/services/cartservice
+            printf '%s\n' \
+              "SERVER_PORT=${{ secrets.CARTSERVICE_SERVER_PORT }}" \
+              "SPRING_DATASOURCE_URL=${{ secrets.CARTSERVICE_DATASOURCE_URL }}" \
+              "SPRING_DATASOURCE_USERNAME=${{ secrets.CARTSERVICE_DATASOURCE_USERNAME }}" \
+              "SPRING_DATASOURCE_PASSWORD=${{ secrets.CARTSERVICE_DATASOURCE_PASSWORD }}" \
+              "EUREKA=${{ secrets.CARTSERVICE_EUREKA_URL }}" \
+              "EUREKA_INSTANCE_HOSTNAME=${{ secrets.CARTSERVICE_EUREKA_HOSTNAME }}" \
+              "REDIS_HOST=${{ secrets.CARTSERVICE_REDIS_HOST }}" \
+              "REDIS_PORT=${{ secrets.CARTSERVICE_REDIS_PORT }}" \
+              "JWK_URI=${{ secrets.CARTSERVICE_JWK_URI }}" \
+              "ISSUER_URI=${{ secrets.CARTSERVICE_ISSUER_URI }}" \
+              "ELASTIC_SEARCH_URI=${{ secrets.CARTSERVICE_ELASTIC_SEARCH_URI }}" \
+              > .env
+            chmod 600 .env
+            docker pull stargazingsparrow/cartservice:latest
+            docker-compose down
+            docker-compose up -d
