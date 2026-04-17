@@ -152,22 +152,7 @@ function buildScenarios(token, productIds) {
     }
 
     return [
-        // 40% GET
-        () => req('GET  /v1/products/:id',    'GET',  `/v1/products/${pickRandom(productIds)}`),
-        () => req('GET  /v1/products/:id',    'GET',  `/v1/products/${pickRandom(productIds)}`),
-        () => req('GET  /v1/products/:id',    'GET',  `/v1/products/${pickRandom(productIds)}`),
-        () => req('GET  /v1/products/:id',    'GET',  `/v1/products/${pickRandom(productIds)}`),
-        // 20% search
-        () => req('POST /v1/products/search', 'POST', '/v1/products/search',
-              { keywords: pickRandom(['', 'test', 'new']), page: 0, size: 10, sort: 'price' }),
-        () => req('POST /v1/products/search', 'POST', '/v1/products/search',
-              { keywords: 'electronics', category: 'Electronics', page: 0, size: 5 }),
-        // 20% patch
-        () => req('PATCH /v1/products/:id',   'PATCH',`/v1/products/${pickRandom(productIds)}`,
-              { price: parseFloat((Math.random() * 200 + 10).toFixed(2)) }),
-        () => req('PATCH /v1/products/:id',   'PATCH',`/v1/products/${pickRandom(productIds)}`,
-              { title: 'Updated-' + Date.now() }),
-        // 20% create
+        // 100% create
         () => req('POST /v1/products',        'POST', '/v1/products',
               { title: 'LT-' + Date.now(), description: 'load test', price: 1.0,
                 image: 'https://via.placeholder.com/150', category: 'Electronics' }),
@@ -298,15 +283,26 @@ async function main() {
 
     process.on('SIGINT', () => { stopSignal.stop = true; });
 
-    // Clear & start dashboard
-    process.stdout.write(A.hideCursor + A.clearScreen);
+    // Hide cursor; we'll redraw in-place by moving cursor up N lines each tick
+    process.stdout.write(A.hideCursor);
 
     const snapInterval = setInterval(() => stats.snapRps(), 1000);
 
-    const dashInterval = setInterval(() => {
-        process.stdout.write(A.moveTo(1, 1));
-        process.stdout.write(renderDashboard(stats, CONCURRENCY));
-    }, 250);
+    let lastLineCount = 0;
+    function redraw() {
+        const frame = renderDashboard(stats, CONCURRENCY);
+        const frameLines = frame.split('\n');
+        if (lastLineCount > 0) {
+            // Move up to where the dashboard started, clear each line as we go
+            process.stdout.write(`\x1b[${lastLineCount}A`);
+        }
+        process.stdout.write(frameLines.map(l => '\x1b[2K' + l).join('\n'));
+        lastLineCount = frameLines.length;
+    }
+
+    // First render
+    redraw();
+    const dashInterval = setInterval(redraw, 250);
 
     // Staggered ramp-up
     const workerPromises = [];
@@ -330,8 +326,7 @@ async function main() {
     clearInterval(dashInterval);
 
     // Final frame
-    process.stdout.write(A.moveTo(1, 1));
-    process.stdout.write(renderDashboard(stats, CONCURRENCY));
+    redraw();
     process.stdout.write(A.showCursor);
 
     const e = stats.elapsed().toFixed(1);
