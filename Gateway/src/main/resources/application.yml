@@ -111,8 +111,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:3}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:10000}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:30000}
 
         - id: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_ID:productserviceforwarding-post-patch-delete}
           predicates:
@@ -123,8 +123,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1000}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5000}
 
         # CART SERVICE
         - id: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_ID:cartservice-get}
@@ -137,8 +137,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_FILTERS[1]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1000}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5000}
 
         - id: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_ID:cartservice-post-patch-delete}
           predicates:
@@ -149,8 +149,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1000}
+                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5000}
 
         # ORDER SERVICE
         - id: ${SPRING_CLOUD_GATEWAY_ROUTES[9]_ID:orderservice-get}

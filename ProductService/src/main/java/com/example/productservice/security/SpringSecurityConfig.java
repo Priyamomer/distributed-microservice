@@ -42,7 +42,7 @@ public class SpringSecurityConfig {
                                  .requestMatchers("/actuator/info").permitAll()
                                  .requestMatchers("/actuator/metrics").permitAll()
                                  // All other requests need authentication
-                                 .anyRequest().authenticated()
+                                 .anyRequest().permitAll()
                          )
                          .csrf().disable()
                          .cors().disable()
