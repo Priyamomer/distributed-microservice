@@ -7,7 +7,7 @@ spec:
     app: userservice
   ports:
     - protocol: TCP
-      port: 8000
-      targetPort: 8000
-  type: LoadBalancer
-
+      port: 8200
+      targetPort: 8200
+      nodePort: 30200
+  type: NodePort

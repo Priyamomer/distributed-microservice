@@ -11,7 +11,6 @@ spec:
       app: userservice
   template:
     metadata:
-      name: userservice
       labels:
         app: userservice
     spec:
@@ -20,11 +19,17 @@ spec:
           image: priyamomer/userservice:0.1.0
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8000
+            - containerPort: 8200
               protocol: TCP
           env:
-            - name: POD_IP
-              valueFrom:
-                  fieldRef:
-                    fieldPath: status.podIP
-      restartPolicy: Always
+            - name: SERVER_PORT
+              value: "8200"
+            # MySQL on host machine — use host.minikube.internal
+            # allowPublicKeyRetrieval + useSSL=false avoids common MySQL 8 handshake errors
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://192.168.65.254:3306/userservice?allowPublicKeyRetrieval=true&useSSL=false"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "user99"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "password"
+            # Disable Eureka in k8s — use k8s DNS for service discovery instead

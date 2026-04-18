@@ -1,0 +1,61 @@
+# ─── Deployment ───────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: userservice
+  template:
+    metadata:
+      labels:
+        app: userservice
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: userservice
+          image: stargazingsparrow/userservice:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8200
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            - name: SERVER_PORT
+              value: "8200"
+            - name: EUREKA_CLIENT_ENABLED
+              value: "false"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://10.0.0.2:3306/userservice?allowPublicKeyRetrieval=true&useSSL=false"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: userservice-secrets
+                  key: db-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: userservice-secrets
+                  key: db-password
+---
+# ─── Service ──────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: userservice
+spec:
+  selector:
+    app: userservice
+  ports:
+    - port: 8200
+      targetPort: 8200
+      nodePort: 30200
+  type: NodePort

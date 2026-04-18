@@ -2,7 +2,7 @@ name: Deploy CartService
 
 on:
   push:
-    branches: [main]
+    branches:  [main-docker-compose-disabled]
     paths: ['CartService/**']
 
 jobs:

@@ -2,7 +2,7 @@ name: Deploy NotificationService
 
 on:
   push:
-    branches: [main]
+    branches:  [main-docker-compose-disabled]
     paths: ['NotificationService/**']
 
 jobs:

@@ -2,7 +2,7 @@ name: Deploy OrderService
 
 on:
   push:
-    branches: [main]
+    branches:  [main-docker-compose-disabled]
     paths: ['OrderService/**']
 
 jobs:
