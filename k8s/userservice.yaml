@@ -34,7 +34,7 @@ spec:
             - name: EUREKA_CLIENT_ENABLED
               value: "false"
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mysql://10.0.0.2:3306/userservice?allowPublicKeyRetrieval=true&useSSL=false"
+              value: "jdbc:mysql://10.0.0.2:3306/userservice"
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
