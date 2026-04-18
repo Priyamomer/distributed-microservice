@@ -13,7 +13,7 @@ const HOST       = args.host        || 'http://62.238.15.118:30200';
 const AUTH_BASE  = args.auth        || HOST;
 const CLIENT_ID  = args.clientId    || 'productService';
 const CLIENT_SECRET = args.clientSecret || 'productServiceSecret';
-const CONCURRENCY   = parseInt(args.concurrency || '200');
+const CONCURRENCY   = parseInt(args.concurrency || '50');
 const TOTAL_REQS    = parseInt(args.requests    || '10000');
 
 const green  = s => `\x1b[32m${s}\x1b[0m`;
