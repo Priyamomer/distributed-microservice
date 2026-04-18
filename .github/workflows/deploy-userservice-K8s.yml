@@ -20,7 +20,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      # ── 3. Build  ─────────────────────────────────────────────────
+      # ── 3. Build ─────────────────────────────────────────────────
       - name: Build JAR
         run: cd UserService && mvn clean package -DskipTests
 
@@ -40,7 +40,7 @@ jobs:
           context: ./UserService
           platforms: linux/amd64
           push: true
-          tags: stargazingsparrow/userservice:latest
+          tags: stargazingsparrow/userservice:${{ github.sha }}
 
       # ── 5. Configure kubectl ─────────────────────────────────────
       - name: Set up kubectl
@@ -52,7 +52,7 @@ jobs:
           echo "${{ secrets.KUBECONFIG_BASE64 }}" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
 
-      # ── 6. Push secrets to k8s ───────────────────────────────────
+      # ── 6. Sync secrets to k8s ───────────────────────────────────
       - name: Sync secrets to k8s
         run: |
           kubectl create secret generic userservice-secrets \
@@ -65,5 +65,5 @@ jobs:
         run: |
           kubectl apply -f k8s/userservice.yaml
           kubectl set image deployment/userservice \
-            userservice=stargazingsparrow/userservice:latest
+            userservice=stargazingsparrow/userservice:${{ github.sha }}
           kubectl rollout status deployment/userservice --timeout=120s
