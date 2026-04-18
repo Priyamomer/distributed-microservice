@@ -20,7 +20,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      # ── 3. Build ─────────────────────────────────────────────────
+      # ── 3. Build  ─────────────────────────────────────────────────
       - name: Build JAR
         run: cd UserService && mvn clean package -DskipTests
 
