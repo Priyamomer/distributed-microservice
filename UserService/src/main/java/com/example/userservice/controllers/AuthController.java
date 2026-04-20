@@ -19,7 +19,7 @@ public class AuthController {
     }
     @PostMapping("/signup")
     public ResponseEntity<UserDto> signup(@RequestBody SignupRequestDto signupRequestDto) throws InvalidParameterException {
-        System.out.println("Signup user is been triggered and this is also the testing of CI and CD pipeline ");
+        System.out.println("Signup user is been triggered and this is also the testing of CI and CD pipeline 1");
         return authService.signUp(signupRequestDto.getEmail(),signupRequestDto.getPassword());
     }
     @PostMapping("/password")
