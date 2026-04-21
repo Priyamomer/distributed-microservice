@@ -1,0 +1,140 @@
+# ─── Secret ───────────────────────────────────────────────────
+# kubectl create secret generic gateway-secrets \
+#   --from-literal=oauth2-client-id=<client-id> \
+#   --from-literal=oauth2-client-secret=<client-secret>
+# ─── Deployment ───────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: gateway
+          image: stargazingsparrow/gateway:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            - name: SERVER_PORT
+              value: "8000"
+            - name: SPRING_APPLICATION_NAME
+              value: "Gateway"
+
+            # Eureka disabled
+            - name: EUREKA_CLIENT_REGISTER-WITH-EUREKA
+              value: "false"
+            - name: EUREKA_CLIENT_FETCH-REGISTRY
+              value: "false"
+
+            # Redis (on CX33)
+            - name: SPRING_DATA_REDIS_HOST
+              value: "10.0.0.2"
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
+
+            # OAuth2 client — points to userservice k8s DNS
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_CLIENT-ID
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-secrets
+                  key: oauth2-client-id
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_CLIENT-SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-secrets
+                  key: oauth2-client-secret
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_AUTHORIZATION-GRANT-TYPE
+              value: "authorization_code"
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_SCOPE
+              value: "openid"
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_REDIRECT-URI
+              value: "http://62.238.15.118:30000/login/oauth2/code/gateway"
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MY-PROVIDER_ISSUER-URI
+              value: "http://62.238.15.118:30200"
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MY-PROVIDER_AUTHORIZATION-URI
+              value: "http://62.238.15.118:30200/oauth2/authorize"
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MY-PROVIDER_TOKEN-URI
+              value: "http://62.238.15.118:30200/oauth2/token"
+
+            # Route URIs — override lb:// with k8s ClusterDNS
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[0]_URI
+              value: "http://userservice:8200"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[1]_URI
+              value: "http://userservice:8200"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[2]_URI
+              value: "http://userservice:8200"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[3]_URI
+              value: "http://userservice:8200"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[4]_URI
+              value: "http://userservice:8200"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[6]_URI
+              value: "http://productservice:8300"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[7]_URI
+              value: "http://cartservice:8400"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[8]_URI
+              value: "http://cartservice:8400"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[9]_URI
+              value: "http://orderservice:8500"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[10]_URI
+              value: "http://orderservice:8500"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[11]_URI
+              value: "http://paymentservice:8600"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[12]_URI
+              value: "http://paymentservice:8600"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[13]_URI
+              value: "http://notificationservice:8700"
+
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx512m"
+---
+# ─── Service ──────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+spec:
+  selector:
+    app: gateway
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30000
+  type: NodePort
+---
+# ─── HPA ──────────────────────────────────────────────────────
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gateway
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gateway
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80

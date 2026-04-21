@@ -1,0 +1,96 @@
+# ════════════════════════════════════════════════════════════════
+# CART SERVICE
+# kubectl create secret generic cartservice-secrets \
+#   --from-literal=db-username=<user> \
+#   --from-literal=db-password=<pass>
+# ════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cartservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cartservice
+  template:
+    metadata:
+      labels:
+        app: cartservice
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: cartservice
+          image: stargazingsparrow/cartservice:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8400
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            - name: SERVER_PORT
+              value: "8400"
+            - name: EUREKA_CLIENT_REGISTER-WITH-EUREKA
+              value: "false"
+            - name: EUREKA_CLIENT_FETCH-REGISTRY
+              value: "false"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://10.0.0.2:3306/cartservice"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: cartservice-secrets
+                  key: db-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cartservice-secrets
+                  key: db-password
+            - name: SPRING_DATA_REDIS_HOST
+              value: "10.0.0.2"
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
+            - name: SPRING_ELASTICSEARCH_URIS
+              value: "http://10.0.0.2:9200"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+              value: "http://62.238.15.118:30200"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+              value: "http://62.238.15.118:30200/oauth2/jwks"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cartservice
+spec:
+  selector:
+    app: cartservice
+  ports:
+    - port: 8400
+      targetPort: 8400
+      nodePort: 30400
+  type: NodePort
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cartservice
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cartservice
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80

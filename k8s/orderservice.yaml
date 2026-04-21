@@ -1,0 +1,90 @@
+# ════════════════════════════════════════════════════════════════
+# ORDER SERVICE
+# kubectl create secret generic orderservice-secrets \
+#   --from-literal=db-username=<user> \
+#   --from-literal=db-password=<pass>
+# ════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orderservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orderservice
+  template:
+    metadata:
+      labels:
+        app: orderservice
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: orderservice
+          image: stargazingsparrow/orderservice:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8500
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            - name: SERVER_PORT
+              value: "8500"
+            - name: EUREKA_CLIENT_REGISTER-WITH-EUREKA
+              value: "false"
+            - name: EUREKA_CLIENT_FETCH-REGISTRY
+              value: "false"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://10.0.0.2:3306/orderservice"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: orderservice-secrets
+                  key: db-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: orderservice-secrets
+                  key: db-password
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+              value: "http://62.238.15.118:30200"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+              value: "http://62.238.15.118:30200/oauth2/jwks"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderservice
+spec:
+  selector:
+    app: orderservice
+  ports:
+    - port: 8500
+      targetPort: 8500
+      nodePort: 30500
+  type: NodePort
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: orderservice
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: orderservice
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
