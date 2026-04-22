@@ -21,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 
-// Testing product service CI and CD - 5
+// Testing product service CI and CD - 6
 @SpringBootApplication
 //@EnableJpaRepositories("com.example.productservice.repositories")
 //@EnableElasticsearchRepositories("com.example.productservice.repositorieselasticsearch")
