@@ -101,7 +101,7 @@ spring:
                 redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[4]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
 
         # PRODUCT SERVICE
-        - id: productserviceforwarding
+        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_ID:productserviceforwarding}
           predicates:
             - Path=/v1/products/**
             - Method=GET
@@ -110,7 +110,7 @@ spring:
             - TokenRelay=
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
+                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
                 redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:10000}
                 redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:30000}
 
@@ -118,7 +118,7 @@ spring:
           predicates:
             - Path=${SPRING_CLOUD_GATEWAY_ROUTES[6]_PREDICATES[0]:/v1/products/**}
             - Method=${SPRING_CLOUD_GATEWAY_ROUTES[6]_PREDICATES[1]:POST,PATCH,DELETE}
-          uri: lb://productservice
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_URI:lb://productservice}
           filters:
             - name: RequestRateLimiter
               args:
@@ -202,6 +202,7 @@ spring:
                 key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
                 redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
                 redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+
         # NOTIFICATION SERVICE
         - id: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_ID:notificationservice-post}
           predicates:
@@ -214,7 +215,6 @@ spring:
                 key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
                 redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
                 redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
-
 
   security:
     oauth2:
@@ -257,4 +257,3 @@ logging:
   level:
     org.springframework.cloud.gateway.filter.ratelimit: ${LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY_FILTER_RATELIMIT:DEBUG}
     org.springframework.data.redis: ${LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_DATA_REDIS:DEBUG}
-
