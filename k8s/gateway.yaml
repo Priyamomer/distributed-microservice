@@ -68,7 +68,7 @@ spec:
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GATEWAY_REDIRECT-URI
               value: "http://62.238.15.118:30000/login/oauth2/code/gateway"
             - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MY-PROVIDER_ISSUER-URI
-              value: "http://userservice:8200"
+              value: "http://62.238.15.118:30200"
             - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MY-PROVIDER_AUTHORIZATION-URI
               value: "http://userservice:8200/oauth2/authorize"
             - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MY-PROVIDER_TOKEN-URI
