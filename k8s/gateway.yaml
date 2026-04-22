@@ -85,6 +85,8 @@ spec:
               value: "http://userservice:8200"
             - name: SPRING_CLOUD_GATEWAY_ROUTES[4]_URI
               value: "http://userservice:8200"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES[5]_URI
+              value: "http://productservice:8300"
             - name: SPRING_CLOUD_GATEWAY_ROUTES[6]_URI
               value: "http://productservice:8300"
             - name: SPRING_CLOUD_GATEWAY_ROUTES[7]_URI

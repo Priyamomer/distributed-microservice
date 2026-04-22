@@ -52,7 +52,7 @@ public class ProductServiceApplication implements CommandLineRunner {
     public static void main(String[] args) {
        SpringApplication.run(ProductServiceApplication.class,args);
     }
-
+// CI and CD testing -1
     public void run(String... args) throws ProductNotFoundException, AlreadyExistException {
         //Price p=new Price("INT",100);
 //        Optional<Product> productOptional = productRepository.findById(UUID.fromString("01087441-38f5-4bf7-a561-566331a12c55"));

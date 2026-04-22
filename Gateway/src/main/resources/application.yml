@@ -105,7 +105,7 @@ spring:
           predicates:
             - Path=/v1/products/**
             - Method=GET
-          uri: lb://productservice
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_URI:lb://productservice}
           filters:
             - TokenRelay=
             - name: RequestRateLimiter
