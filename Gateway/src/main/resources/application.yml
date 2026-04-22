@@ -44,177 +44,177 @@ spring:
         enabled: true
       routes:
         # USER SERVICE
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[0]_ID:auth-signup-password}
+        - id: auth-signup-password
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[0]_PREDICATES[0]:/v1/auth/**}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[0]_PREDICATES[1]:POST}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[0]_URI:lb://userservice}
+            - Path=/v1/auth/**
+            - Method=POST
+          uri: ${USERSERVICE_URI:lb://userservice}
 
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[1]_ID:roles-get}
+        - id: roles-get
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[1]_PREDICATES[0]:/v1/roles/**}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[1]_PREDICATES[1]:GET}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[1]_URI:lb://userservice}
+            - Path=/v1/roles/**
+            - Method=GET
+          uri: ${USERSERVICE_URI:lb://userservice}
           filters:
             - TokenRelay=
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[1]_FILTERS[1]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[1]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[1]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 5
 
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[2]_ID:roles-post}
+        - id: roles-post
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[2]_PREDICATES[0]:/v1/roles/**}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[2]_PREDICATES[1]:POST}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[2]_URI:lb://userservice}
+            - Path=/v1/roles/**
+            - Method=POST
+          uri: ${USERSERVICE_URI:lb://userservice}
           filters:
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[2]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[2]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[2]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 5
 
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[3]_ID:user-get}
+        - id: user-get
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[3]_PREDICATES[0]:/v1/users/**}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[3]_PREDICATES[1]:GET}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[3]_URI:lb://userservice}
+            - Path=/v1/users/**
+            - Method=GET
+          uri: ${USERSERVICE_URI:lb://userservice}
           filters:
             - TokenRelay=
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[3]_FILTERS[1]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[3]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[3]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 5
 
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[4]_ID:user-roles-post}
+        - id: user-roles-post
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[4]_PREDICATES[0]:/v1/users/**}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[4]_PREDICATES[1]:POST}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[4]_URI:lb://userservice}
+            - Path=/v1/users/**
+            - Method=POST
+          uri: ${USERSERVICE_URI:lb://userservice}
           filters:
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[4]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[4]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[4]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 5
 
         # PRODUCT SERVICE
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_ID:productserviceforwarding}
+        - id: productservice-get
           predicates:
             - Path=/v1/products/**
             - Method=GET
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_URI:lb://productservice}
+          uri: ${PRODUCTSERVICE_URI:lb://productservice}
           filters:
             - TokenRelay=
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:10000}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:30000}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 10000
+                redis-rate-limiter.burstCapacity: 30000
 
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_ID:productserviceforwarding-post-patch-delete}
+        - id: productservice-post-patch-delete
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[6]_PREDICATES[0]:/v1/products/**}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[6]_PREDICATES[1]:POST,PATCH,DELETE}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_URI:lb://productservice}
+            - Path=/v1/products/**
+            - Method=POST,PATCH,DELETE
+          uri: ${PRODUCTSERVICE_URI:lb://productservice}
           filters:
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1000}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[6]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5000}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1000
+                redis-rate-limiter.burstCapacity: 5000
 
         # CART SERVICE
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_ID:cartservice-get}
+        - id: cartservice-get
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[7]_PREDICATES[0]:/v1/cart/**}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[7]_PREDICATES[1]:GET}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_URI:lb://cartservice}
+            - Path=/v1/cart/**
+            - Method=GET
+          uri: ${CARTSERVICE_URI:lb://cartservice}
           filters:
             - TokenRelay=
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_FILTERS[1]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1000}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[7]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5000}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1000
+                redis-rate-limiter.burstCapacity: 5000
 
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_ID:cartservice-post-patch-delete}
+        - id: cartservice-post-patch-delete
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[8]_PREDICATES[0]:/v1/cart/**}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[8]_PREDICATES[1]:POST,PATCH,DELETE}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_URI:lb://cartservice}
+            - Path=/v1/cart/**
+            - Method=POST,PATCH,DELETE
+          uri: ${CARTSERVICE_URI:lb://cartservice}
           filters:
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1000}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[8]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5000}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1000
+                redis-rate-limiter.burstCapacity: 5000
 
         # ORDER SERVICE
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[9]_ID:orderservice-get}
+        - id: orderservice-get
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[9]_PREDICATES[0]:/v1/orders/**}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[9]_PREDICATES[1]:GET}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[9]_URI:lb://orderservice}
+            - Path=/v1/orders/**
+            - Method=GET
+          uri: ${ORDERSERVICE_URI:lb://orderservice}
           filters:
             - TokenRelay=
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[9]_FILTERS[1]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[9]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[9]_FILTERS[1]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 5
 
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[10]_ID:orderservice-post-patch}
+        - id: orderservice-post-patch
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[10]_PREDICATES[0]:/v1/orders/**}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[10]_PREDICATES[1]:POST,PATCH}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[10]_URI:lb://orderservice}
+            - Path=/v1/orders/**
+            - Method=POST,PATCH
+          uri: ${ORDERSERVICE_URI:lb://orderservice}
           filters:
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[10]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[10]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[10]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 5
 
         # PAYMENT SERVICE
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[11]_ID:paymentservice-post}
+        - id: paymentservice-post
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[11]_PREDICATES[0]:/v1/payments}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[11]_PREDICATES[1]:POST}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[11]_URI:lb://paymentservice}
+            - Path=/v1/payments
+            - Method=POST
+          uri: ${PAYMENTSERVICE_URI:lb://paymentservice}
           filters:
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[11]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[11]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[11]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 5
 
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_ID:paymentservice-webhooks}
+        - id: paymentservice-webhooks
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[12]_PREDICATES[0]:/v1/payments/webhooks}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[12]_PREDICATES[1]:POST}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_URI:lb://paymentservice}
+            - Path=/v1/payments/webhooks
+            - Method=POST
+          uri: ${PAYMENTSERVICE_URI:lb://paymentservice}
           filters:
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[12]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 5
 
         # NOTIFICATION SERVICE
-        - id: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_ID:notificationservice-post}
+        - id: notificationservice-post
           predicates:
-            - Path=${SPRING_CLOUD_GATEWAY_ROUTES[13]_PREDICATES[0]:/v1/notifications/send-message}
-            - Method=${SPRING_CLOUD_GATEWAY_ROUTES[13]_PREDICATES[1]:POST}
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_URI:lb://notificationservice}
+            - Path=/v1/notifications/send-message
+            - Method=POST
+          uri: ${NOTIFICATIONSERVICE_URI:lb://notificationservice}
           filters:
             - name: RequestRateLimiter
               args:
-                key-resolver: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_FILTERS[0]_ARGS_KEY-RESOLVER:#{@userKeyResolver}}
-                redis-rate-limiter.replenishRate: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.REPLENISHRATE:1}
-                redis-rate-limiter.burstCapacity: ${SPRING_CLOUD_GATEWAY_ROUTES[13]_FILTERS[0]_ARGS_REDIS-RATE-LIMITER.BURSTCAPACITY:5}
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 5
 
   security:
     oauth2:

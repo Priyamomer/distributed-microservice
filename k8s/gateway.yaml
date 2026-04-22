@@ -75,33 +75,17 @@ spec:
               value: "http://62.238.15.118:30200/oauth2/token"
 
             # Route URIs — override lb:// with k8s ClusterDNS
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[0]_URI
+            - name: USERSERVICE_URI
               value: "http://userservice:8200"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[1]_URI
-              value: "http://userservice:8200"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[2]_URI
-              value: "http://userservice:8200"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[3]_URI
-              value: "http://userservice:8200"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[4]_URI
-              value: "http://userservice:8200"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[5]_URI
+            - name: PRODUCTSERVICE_URI
               value: "http://productservice:8300"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[6]_URI
-              value: "http://productservice:8300"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[7]_URI
+            - name: CARTSERVICE_URI
               value: "http://cartservice:8400"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[8]_URI
-              value: "http://cartservice:8400"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[9]_URI
+            - name: ORDERSERVICE_URI
               value: "http://orderservice:8500"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[10]_URI
-              value: "http://orderservice:8500"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[11]_URI
+            - name: PAYMENTSERVICE_URI
               value: "http://paymentservice:8600"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[12]_URI
-              value: "http://paymentservice:8600"
-            - name: SPRING_CLOUD_GATEWAY_ROUTES[13]_URI
+            - name: NOTIFICATIONSERVICE_URI
               value: "http://notificationservice:8700"
 
             - name: JAVA_OPTS
