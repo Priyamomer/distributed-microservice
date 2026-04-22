@@ -3,7 +3,7 @@ package com.example.gateway;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-//CI and CD pipeline testing 6
+//CI and CD pipeline testing 8
 @SpringBootApplication
 public class GatewayApplication {
 
