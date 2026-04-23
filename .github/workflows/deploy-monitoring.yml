@@ -1,0 +1,25 @@
+name: Deploy Monitoring
+
+on:
+  push:
+    branches: [main]
+    paths: ['k8s/monitoring.yaml']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_BASE64 }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Deploy monitoring stack
+        run: kubectl apply -f k8s/monitoring.yaml
