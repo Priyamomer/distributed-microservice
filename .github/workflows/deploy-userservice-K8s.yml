@@ -66,4 +66,4 @@ jobs:
           kubectl apply -f k8s/userservice.yaml
           kubectl set image deployment/userservice \
             userservice=stargazingsparrow/userservice:${{ github.sha }}
-          kubectl rollout status deployment/userservice --timeout=120s
+          kubectl rollout status deployment/userservice --timeout=300s
