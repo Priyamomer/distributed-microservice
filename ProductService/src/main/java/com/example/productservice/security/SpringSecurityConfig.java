@@ -36,13 +36,9 @@ public class SpringSecurityConfig {
                  http
                          .authorizeHttpRequests(authorize -> authorize
                                  // Actuator endpoints
-                                 .requestMatchers("/actuator/**").permitAll()
-                                 .requestMatchers("/actuator/prometheus").permitAll()
-                                 .requestMatchers("/actuator/health").permitAll()
-                                 .requestMatchers("/actuator/info").permitAll()
-                                 .requestMatchers("/actuator/metrics").permitAll()
+                                 .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
                                  // All other requests need authentication
-                                 .anyRequest().permitAll()
+                                 .anyRequest().authenticated()
                          )
                          .csrf().disable()
                          .cors().disable()

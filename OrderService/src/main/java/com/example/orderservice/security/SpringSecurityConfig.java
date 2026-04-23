@@ -20,6 +20,7 @@ public class SpringSecurityConfig {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         //.requestMatchers(HttpMethod.GET,"/products").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
                         .anyRequest().authenticated()
                 ).csrf().disable().cors().disable()
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));
