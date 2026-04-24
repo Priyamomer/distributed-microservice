@@ -26,7 +26,7 @@ spec:
               cpu: "500m"
               memory: "256Mi"
             limits:
-              cpu: "500m"
+              cpu: "1000m"
               memory: "512Mi"
           env:
             - name: SERVER_PORT
@@ -93,11 +93,11 @@ spec:
     kind: Deployment
     name: userservice
   minReplicas: 1
-  maxReplicas: 3
+  maxReplicas: 10
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 80
+          averageUtilization: 50
