@@ -26,8 +26,9 @@ const BUCKET_MS  = 500;
 const ROLLING_N  = 100;
 const BATCH_SIZE = 1000;
 
-const PCT_INTERVAL   = 1;
-const PCT_SNAP_EVERY = Math.floor(TOTAL_REQS * (PCT_INTERVAL / 100));
+// Progress snapshot every PCT_INTERVAL percent (1% = every 10,000 reqs for 1M)
+const PCT_INTERVAL    = 0.1;
+const PCT_SNAP_EVERY  = Math.floor(TOTAL_REQS * (PCT_INTERVAL / 100));
 
 // ── ANSI ──────────────────────────────────────────────────────────────────────
 const R       = '\x1b[0m';
@@ -36,12 +37,13 @@ const red     = s => `\x1b[31m${s}${R}`;
 const yellow  = s => `\x1b[33m${s}${R}`;
 const cyan    = s => `\x1b[36m${s}${R}`;
 const magenta = s => `\x1b[35m${s}${R}`;
+const blue    = s => `\x1b[34m${s}${R}`;
 const bold    = s => `\x1b[1m${s}${R}`;
 const dim     = s => `\x1b[2m${s}${R}`;
 const goto    = (r, c) => `\x1b[${r};${c}H`;
 const clrLine = () => '\x1b[2K';
 
-// ── Braille engine ────────────────────────────────────────────────────────────
+// ── Braille line-chart engine ─────────────────────────────────────────────────
 const BRAILLE_BASE = 0x2800;
 const BRAILLE_BIT  = [
   [0x01, 0x08],
@@ -50,62 +52,41 @@ const BRAILLE_BIT  = [
   [0x40, 0x80],
 ];
 
-// Renders series into a CHART_W × CHART_H braille grid.
-// KEY CHANGE: data is stretched to fill exactly CHART_W*2 sub-columns
-// regardless of how many points exist, so the chart always fills the box.
-// When fewer than CHART_W*2 points exist the data is upscaled (each point
-// occupies multiple columns) so dots spread across the full width.
 function brailleChartMulti(series, maxVal) {
   const subCols = CHART_W * 2;
   const subRows = CHART_H * 4;
+
+  const toRow = v => {
+    if (v === null || v === undefined) return null;
+    return Math.round(Math.max(0, Math.min(subRows - 1, (v / maxVal) * (subRows - 1))));
+  };
 
   const grids = series.map(() =>
     Array.from({ length: CHART_H }, () => new Uint8Array(CHART_W))
   );
 
   const paintDot = (grid, subCol, subRow) => {
-    if (subRow === null || subRow === undefined) return;
+    if (subRow === null) return;
     const bCol   = Math.floor(subCol / 2);
     const dotCol = subCol % 2;
     const bRow   = Math.floor((subRows - 1 - subRow) / 4);
     const dotRow = (subRows - 1 - subRow) % 4;
-    if (bRow < 0 || bRow >= CHART_H || bCol < 0 || bCol >= CHART_W) return;
+    if (bRow < 0 || bRow >= CHART_H) return;
     grid[bRow][bCol] |= BRAILLE_BIT[dotRow][dotCol];
   };
 
-  const toSubRow = v => {
-    if (v === null || v === undefined || maxVal === 0) return null;
-    return Math.round(Math.max(0, Math.min(subRows - 1, (v / maxVal) * (subRows - 1))));
-  };
-
-  series.forEach(({ data, color }, si) => {
-    const n = data.length;
-    if (n === 0) return;
-
-    // Map each data index to a sub-column position, stretching to fill the chart
-    // When n < subCols each point covers multiple columns (upscale)
-    // When n > subCols we take the last subCols points (scroll)
-    const src  = n <= subCols ? data : data.slice(n - subCols);
-    const srcN = src.length;
-
+  series.forEach(({ data }, si) => {
+    const rows = data.map(toRow);
     for (let col = 0; col < subCols; col++) {
-      // Map col → src index (stretch if srcN < subCols)
-      const srcIdx = Math.min(srcN - 1, Math.floor((col / subCols) * srcN));
-      const r      = toSubRow(src[srcIdx]);
+      const r = rows[col];
       if (r === null) continue;
-
       paintDot(grids[si], col, r);
-
-      // Interpolate between adjacent source points for a connected line
-      if (col > 0) {
-        const prevIdx = Math.min(srcN - 1, Math.floor(((col - 1) / subCols) * srcN));
-        const r0      = toSubRow(src[prevIdx]);
-        if (r0 !== null && r0 !== r) {
-          const steps = Math.abs(r - r0);
-          for (let s = 1; s < steps; s++) {
-            const mid = Math.round(r0 + (r - r0) * (s / steps));
-            paintDot(grids[si], col, mid);
-          }
+      if (col > 0 && rows[col - 1] !== null) {
+        const r0 = rows[col - 1], r1 = r;
+        const steps = Math.abs(r1 - r0);
+        for (let s = 1; s < steps; s++) {
+          const mid = Math.round(r0 + (r1 - r0) * (s / steps));
+          paintDot(grids[si], col - 1 + (s / steps < 0.5 ? 0 : 1), mid);
         }
       }
     }
@@ -127,9 +108,9 @@ function brailleChartMulti(series, maxVal) {
   return lines;
 }
 
-function brailleChart(dataA, dataB, maxVal, colorA, colorB) {
+function brailleChart(seriesA, seriesB, maxVal, colorA, colorB) {
   return brailleChartMulti(
-    [{ data: dataA, color: colorA }, { data: dataB, color: colorB }],
+    [{ data: seriesA, color: colorA }, { data: seriesB, color: colorB }],
     maxVal
   );
 }
@@ -146,10 +127,12 @@ let   batchStart = null;
 let   lastBatchN = 0;
 
 // ── Progress snapshots ────────────────────────────────────────────────────────
-const pctSnaps    = [];
-let   lastSnapAt  = 0;
-const snapWindow  = [];
-let   snapWinStart = null;
+const pctSnaps   = [];
+let   lastSnapAt = 0;
+const snapWindow = [];      // latency entries for current window
+let   snapWinStart = null;  // ← timestamp when the current snapshot window began
+                            //   FIX: RPS = PCT_SNAP_EVERY / (now - snapWinStart)
+                            //   not PCT_SNAP_EVERY / (now - startAll)
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
 function rollingAvg() {
@@ -194,19 +177,29 @@ function maybePushBatch(now) {
   }
 }
 
+// ── FIX: RPS measured over the actual wall-clock time of this 1% window ──────
 function maybePushPctSnap(ms, now) {
+  // Initialise window start on the very first request
   if (snapWinStart === null) snapWinStart = now;
 
   snapWindow.push(ms);
+  // keep at most one window worth of entries (no stale data from prev windows)
   if (snapWindow.length > PCT_SNAP_EVERY) snapWindow.shift();
 
   const snapsDone = Math.floor(completed / PCT_SNAP_EVERY);
   const prevSnaps = Math.floor(lastSnapAt / PCT_SNAP_EVERY);
 
   if (snapsDone > prevSnaps && snapWindow.length >= 10) {
-    const pct      = Math.round((completed / TOTAL_REQS) * 100);
+    const pct = Math.round((completed / TOTAL_REQS) * 100);
+
+    // ── THE FIX ──────────────────────────────────────────────────────────────
+    // windowMs = time elapsed since this snapshot window started.
+    // This is always ~(PCT_SNAP_EVERY / actual_rps) seconds regardless of
+    // how long the overall test has been running.
+    // The old code used (now - startAll) which grows forever → RPS shrank.
     const windowMs = Math.max(now - snapWinStart, 1);
     const rps      = Math.round((PCT_SNAP_EVERY / windowMs) * 1000);
+    // ─────────────────────────────────────────────────────────────────────────
 
     const sorted = [...snapWindow].sort((a, b) => a - b);
     const p      = frac => sorted[Math.floor(sorted.length * frac)] ?? 0;
@@ -221,36 +214,18 @@ function maybePushPctSnap(ms, now) {
     });
 
     if (pctSnaps.length > CHART_W * 2) pctSnaps.shift();
-    lastSnapAt     = completed;
-    snapWinStart   = now;
-    snapWindow.length = 0;
+
+    lastSnapAt    = completed;
+    snapWinStart  = now;   // reset window start for next snapshot
+    snapWindow.length = 0; // clear — start fresh for next window
   }
 }
 
-// ── Render helpers ────────────────────────────────────────────────────────────
-// y-axis label — always 3 ticks: max, mid, 0
-function yLbl(row, maxV, unit = '') {
-  if (row === 0)                       return yellow(String(maxV).padStart(6) + unit + ' ┤');
-  if (row === Math.floor(CHART_H / 2)) return dim(String(Math.round(maxV / 2)).padStart(6) + unit + ' ┤');
-  if (row === CHART_H - 1)             return dim('     0' + unit + ' ┤');
-  return '        │';
-}
-
-// x-axis label for progress % charts
-// Shows "0% ... current%" growing as data accumulates
-function pctXAxisLabel() {
-  if (pctSnaps.length === 0) return dim(' '.repeat(CHART_W));
-  const startP = pctSnaps[0].pct;
-  const endP   = pctSnaps[pctSnaps.length - 1].pct;
-  let x = ' '.repeat(CHART_W);
-  const place = (str, pos) => {
-    const p = Math.max(0, Math.min(pos, CHART_W - str.length));
-    x = x.slice(0, p) + str + x.slice(p + str.length);
-  };
-  place(startP + '%',                          0);
-  place(Math.round((startP + endP) / 2) + '%', Math.floor(CHART_W / 2) - 2);
-  place(endP + '%',                            CHART_W - String(endP).length - 1);
-  return dim(x);
+// ── Pad series to chart width ─────────────────────────────────────────────────
+function padSeries(arr, fill = null) {
+  const subCols = CHART_W * 2;
+  const p = subCols - arr.length;
+  return p > 0 ? [...Array(p).fill(fill), ...arr] : arr.slice(-subCols);
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
@@ -269,7 +244,14 @@ function render() {
   const border  = dim('─'.repeat(CHART_W));
   const vbar    = dim('│');
 
-  // ── x-axis: time (live charts) ────────────────────────────────────────────
+  const yLbl = (row, maxV, unit = '') => {
+    if (row === 0)                       return yellow(String(maxV).padStart(6) + unit + ' ┤');
+    if (row === Math.floor(CHART_H / 2)) return dim(String(Math.round(maxV / 2)).padStart(6) + unit + ' ┤');
+    if (row === CHART_H - 1)             return dim('     0' + unit + ' ┤');
+    return '        │';
+  };
+
+  // x-axis: time
   const nowSec  = parseFloat(elapsedSec);
   const winSec  = (subCols * BUCKET_MS) / 1000;
   const leftSec = Math.max(0, nowSec - winSec);
@@ -283,10 +265,10 @@ function render() {
     place(fmtS(leftSec),              0);
     place(fmtS(leftSec + winSec / 2), Math.floor(CHART_W / 2) - 2);
     place(fmtS(nowSec),               CHART_W - fmtS(nowSec).length);
-    return dim(x);
+    return x;
   })();
 
-  // ── x-axis: batch ─────────────────────────────────────────────────────────
+  // x-axis: batch
   const batchXAxis = (() => {
     const total  = batchTimes.length;
     const startN = Math.max(0, total - subCols / 2);
@@ -298,19 +280,33 @@ function render() {
     place(startN + 'K',                             0);
     place(Math.round(startN + (total - startN) / 2) + 'K', Math.floor(CHART_W / 2) - 2);
     place(total + 'K',                              CHART_W - String(total).length - 1);
-    return dim(x);
+    return x;
   })();
 
-  // ── Chart 1: batch time ───────────────────────────────────────────────────
+  // x-axis: progress %
+  const pctXAxis = (() => {
+    const startP = pctSnaps.length > 0 ? pctSnaps[Math.max(0, pctSnaps.length - subCols / 2)].pct : 0;
+    const endP   = pctSnaps.length > 0 ? pctSnaps[pctSnaps.length - 1].pct : pct;
+    let x = ' '.repeat(CHART_W);
+    const place = (str, pos) => {
+      const p = Math.max(0, Math.min(pos, CHART_W - str.length));
+      x = x.slice(0, p) + str + x.slice(p + str.length);
+    };
+    place(startP + '%',                          0);
+    place(Math.round((startP + endP) / 2) + '%', Math.floor(CHART_W / 2) - 2);
+    place(endP + '%',                            CHART_W - String(endP).length - 1);
+    return x;
+  })();
+
+  // Chart 1: batch time
   const maxBatch   = Math.max(...batchTimes, 1);
   const minBatch   = Math.min(...batchTimes, maxBatch);
-  // invert so slow=top fast=bottom
-  const invBatch   = batchTimes.map(v => maxBatch - v);
-  const smoBatch   = batchTimes.map((_, i, a) => {
+  const inverted   = padSeries(batchTimes.map(v => maxBatch - v));
+  const smoothed   = padSeries(batchTimes.map((_, i, a) => {
     const win = a.slice(Math.max(0, i - 4), i + 1);
     return maxBatch - Math.round(win.reduce((s, x) => s + x, 0) / win.length);
-  });
-  const batchLines = brailleChart(smoBatch, invBatch, maxBatch, dim, cyan);
+  }));
+  const batchLines = brailleChart(smoothed, inverted, maxBatch, dim, cyan);
   const batchYLbl  = row => {
     const pad = n => String(n).padStart(6);
     if (row === 0)                       return yellow(pad(maxBatch) + 'ms ┤');
@@ -321,34 +317,25 @@ function render() {
   const currentBatchMs   = batchTimes[batchTimes.length - 1] ?? 0;
   const batchesCompleted = batchTimes.length;
 
-  // ── Chart 2: RPS per 1% window ────────────────────────────────────────────
-  // y-axis max = 90th percentile of rps values to suppress cold-start spikes
-  // that would compress the interesting part of the chart
-  const rpsVals    = pctSnaps.map(s => s.rps);
-  const rpsSorted  = [...rpsVals].sort((a, b) => a - b);
-  const rpsP90     = rpsSorted[Math.floor(rpsSorted.length * 0.90)] ?? 1;
-  const maxRps     = Math.max(rpsP90, 1);
-  // clip values to maxRps so spikes don't break the scale
-  const rpsClipped = rpsVals.map(v => Math.min(v, maxRps));
-  const rpsLines   = brailleChart(rpsClipped, rpsClipped, maxRps, dim, green);
+  // Chart 2: RPS by progress %
+  const rpsSnap    = pctSnaps.map(s => s.rps);
+  const maxRpsSnap = Math.max(...rpsSnap, 1);
+  const rpsLines   = brailleChart(padSeries(rpsSnap), padSeries(rpsSnap), maxRpsSnap, dim, green);
 
-  // ── Chart 3: percentiles per 1% window ────────────────────────────────────
-  // y-axis max = 90th percentile of p99 to suppress cold-start explosion
-  const p50s     = pctSnaps.map(s => s.p50);
-  const p95s     = pctSnaps.map(s => s.p95);
-  const p99s     = pctSnaps.map(s => s.p99);
-  const p99Sorted = [...p99s].sort((a, b) => a - b);
-  const p99P90    = p99Sorted[Math.floor(p99Sorted.length * 0.90)] ?? 1;
-  const maxLat2   = Math.max(p99P90, 1);
+  // Chart 3: percentiles by progress %
+  const p50s      = pctSnaps.map(s => s.p50);
+  const p95s      = pctSnaps.map(s => s.p95);
+  const p99s      = pctSnaps.map(s => s.p99);
+  const maxPctLat = Math.max(...p99s, 1);
   const pctLines  = brailleChartMulti([
-    { data: p50s.map(v => Math.min(v, maxLat2)), color: green  },
-    { data: p95s.map(v => Math.min(v, maxLat2)), color: yellow },
-    { data: p99s.map(v => Math.min(v, maxLat2)), color: red    },
-  ], maxLat2);
+    { data: padSeries(p50s), color: green  },
+    { data: padSeries(p95s), color: yellow },
+    { data: padSeries(p99s), color: red    },
+  ], maxPctLat);
 
   const curSnap = pctSnaps[pctSnaps.length - 1];
 
-  // ── Chart 4: live latency ─────────────────────────────────────────────────
+  // Chart 4: live latency
   const maxLat  = Math.max(...buckets.map(b => Math.max(b.instantLat, b.avgLat)), 1);
   const padded  = key => {
     const vals = buckets.map(b => b[key]);
@@ -356,17 +343,6 @@ function render() {
     return p > 0 ? [...Array(p).fill(null), ...vals] : vals.slice(-subCols);
   };
   const latLines = brailleChart(padded('avgLat'), padded('instantLat'), maxLat, dim, magenta);
-
-  // ── "waiting for data" placeholder ────────────────────────────────────────
-  const MIN_SNAPS  = 3;
-  const notEnough  = pctSnaps.length < MIN_SNAPS;
-  const waitMsg    = (label) => [
-    `       ${dim('┌')}${border}${dim('┐')}`,
-    ...Array(CHART_H).fill(`       │${dim(' '.repeat(Math.floor(CHART_W / 2) - 8) + '  gathering data...' + ' '.repeat(CHART_W - Math.floor(CHART_W / 2) - 11))}│`),
-    `       ${dim('└')}${border}${dim('┘')}`,
-  ];
-
-  const pctXAxis = pctXAxisLabel();
 
   const lines = [
     '',
@@ -379,50 +355,34 @@ function render() {
     `     Completed : ${completed.toLocaleString()} / ${TOTAL_REQS.toLocaleString()}   Passed: ${green(String(passed).padStart(7))}   Failed: ${failed > 0 ? red(String(failed).padStart(5)) : String(failed).padStart(5)}`,
     `     Elapsed   : ${elapsedSec}s   Overall: ${overall} req/s`,
     '',
-
-    // Chart 1 — always shown (time-based, fills immediately)
-    bold('  ① Time per 1,000 requests  (ms)') + '   ' + dim('high=slow  →  drops as pods join  →  flat=full capacity'),
+    bold('  ① Time per 1,000 requests  (ms)') + '   ' + dim('high = slow  →  drops as pods join  →  flat = full capacity'),
     `     ${cyan('⎯')} each batch   ${dim('⎯')} smoothed    →  last: ${currentBatchMs > 0 ? cyan(currentBatchMs + 'ms') : dim('...')}   batches: ${yellow(String(batchesCompleted))}`,
     `       ${dim('┌')}${border}${dim('┐')}`,
     ...batchLines.map((row, i) => `  ${batchYLbl(i)}${row}${vbar}`),
     `       ${dim('└')}${border}${dim('┘')}`,
-    `         ${batchXAxis}  ${dim('(×1,000 reqs)')}`,
+    `         ${dim(batchXAxis)}  ${dim('(×1,000 reqs)')}`,
     '',
-
-    // Chart 2 — RPS, wait for enough data
-    bold('  ② RPS per 1% window') + '   ' + dim('grows left→right as pods join   y-axis = p90 of rps (spikes clipped)'),
-    `     ${green('⎯')} rps    →  now: ${green((curSnap?.rps ?? 0) + ' r/s')}   ${dim('snaps: ' + pctSnaps.length)}`,
-    ...(notEnough
-      ? waitMsg()
-      : [
-          `       ${dim('┌')}${border}${dim('┐')}`,
-          ...rpsLines.map((row, i) => `  ${yLbl(i, maxRps)}${row}${vbar}`),
-          `       ${dim('└')}${border}${dim('┘')}`,
-        ]),
-    `         ${pctXAxis}  ${dim('(% progress)')}`,
+    bold('  ② RPS at each 1% window') + '   ' + dim('each bar = reqs in that 1% ÷ time that 1% took  →  rises as pods join'),
+    `     ${green('⎯')} rps per 1% window    →  now: ${green((curSnap?.rps ?? 0) + ' r/s')}`,
+    `       ${dim('┌')}${border}${dim('┐')}`,
+    ...rpsLines.map((row, i) => `  ${yLbl(i, maxRpsSnap)}${row}${vbar}`),
+    `       ${dim('└')}${border}${dim('┘')}`,
+    `         ${dim(pctXAxis)}  ${dim('(% progress)')}`,
     '',
-
-    // Chart 3 — percentiles, wait for enough data
-    bold('  ③ Latency percentiles per 1% window') + '   ' + dim('drops as pods join   y-axis = p90 of p99 (spikes clipped)'),
+    bold('  ③ Latency percentiles at each 1% window') + '   ' + dim('drops as pods join'),
     `     ${green('⎯')} p50   ${yellow('⎯')} p95   ${red('⎯')} p99` +
       (curSnap ? `    →  p50: ${green(curSnap.p50 + 'ms')}  p95: ${yellow(curSnap.p95 + 'ms')}  p99: ${red(curSnap.p99 + 'ms')}` : ''),
-    ...(notEnough
-      ? waitMsg()
-      : [
-          `       ${dim('┌')}${border}${dim('┐')}`,
-          ...pctLines.map((row, i) => `  ${yLbl(i, maxLat2, 'ms')}${row}${vbar}`),
-          `       ${dim('└')}${border}${dim('┘')}`,
-        ]),
-    `         ${pctXAxis}  ${dim('(% progress)')}`,
+    `       ${dim('┌')}${border}${dim('┐')}`,
+    ...pctLines.map((row, i) => `  ${yLbl(i, maxPctLat, 'ms')}${row}${vbar}`),
+    `       ${dim('└')}${border}${dim('┘')}`,
+    `         ${dim(pctXAxis)}  ${dim('(% progress)')}`,
     '',
-
-    // Chart 4 — live latency (always shown)
     bold('  ④ Live latency  (ms)'),
     `     ${magenta('⎯')} instant   ${dim('⎯')} rolling-${ROLLING_N} avg    →  ${magenta(instLat + ' ms')}  avg ${yellow(avgLat + ' ms')}`,
     `       ${dim('┌')}${border}${dim('┐')}`,
     ...latLines.map((row, i) => `  ${yLbl(i, maxLat, 'ms')}${row}${vbar}`),
     `       ${dim('└')}${border}${dim('┘')}`,
-    `         ${timeXAxis}`,
+    `         ${dim(timeXAxis)}`,
     '',
   ];
 
