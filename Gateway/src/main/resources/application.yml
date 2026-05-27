@@ -107,7 +107,6 @@ spring:
             - Method=GET
           uri: ${PRODUCTSERVICE_URI:lb://productservice}
           filters:
-            - TokenRelay=
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
@@ -158,7 +157,6 @@ spring:
             - Method=GET
           uri: ${ORDERSERVICE_URI:lb://orderservice}
           filters:
-            - TokenRelay=
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
