@@ -132,7 +132,6 @@ public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws 
 //                    .requestMatchers("/v1/auth/**").authenticated()
                     //.requestMatchers("/login").permitAll()  // Allow access to login page
                             .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/prometheus").permitAll()
-
                             .anyRequest().authenticated()
             )
             .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
