@@ -60,8 +60,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.replenishRate: 1000
+                redis-rate-limiter.burstCapacity: 5000
 
         - id: roles-post
           predicates:
@@ -72,8 +72,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.replenishRate: 1000
+                redis-rate-limiter.burstCapacity: 5000
 
         - id: user-get
           predicates:
@@ -85,8 +85,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.replenishRate: 1000
+                redis-rate-limiter.burstCapacity: 5000
 
         - id: user-roles-post
           predicates:
@@ -97,8 +97,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.replenishRate: 1000
+                redis-rate-limiter.burstCapacity: 5000
 
         # PRODUCT SERVICE
         - id: productservice-get
@@ -175,8 +175,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.replenishRate: 1000
+                redis-rate-limiter.burstCapacity: 5000
 
         # PAYMENT SERVICE
         - id: paymentservice-post
@@ -188,8 +188,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.replenishRate: 1000
+                redis-rate-limiter.burstCapacity: 5000
 
         - id: paymentservice-webhooks
           predicates:
@@ -200,8 +200,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.replenishRate: 1000
+                redis-rate-limiter.burstCapacity: 5000
 
         # NOTIFICATION SERVICE
         - id: notificationservice-post
@@ -213,8 +213,8 @@ spring:
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.replenishRate: 1000
+                redis-rate-limiter.burstCapacity: 5000
 
   security:
     oauth2:
