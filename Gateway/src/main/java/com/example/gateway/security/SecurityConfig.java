@@ -28,7 +28,7 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.DELETE, "/v1/products/**").permitAll()
 
 
-                        .pathMatchers(HttpMethod.GET, "/v1/cart/**").authenticated()
+                        .pathMatchers(HttpMethod.GET, "/v1/cart/**").permitAll()
                         .pathMatchers(HttpMethod.POST, "/v1/cart/**").permitAll()
                         .pathMatchers(HttpMethod.PATCH, "/v1/cart/**").permitAll()
                         .pathMatchers(HttpMethod.DELETE, "/v1/cart/**").permitAll()

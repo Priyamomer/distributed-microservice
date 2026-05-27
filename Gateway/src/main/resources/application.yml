@@ -133,7 +133,6 @@ spring:
             - Method=GET
           uri: ${CARTSERVICE_URI:lb://cartservice}
           filters:
-            - TokenRelay=
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
