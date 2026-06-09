@@ -95,6 +95,7 @@ WebhookController {
     }
 
     private void updateOrderStatus(String orderId, OrderStatus status) {
+        System.out.println("Updating order status for Order ID: " + orderId);
         try {
             OrderPaymentStatusUpdateDto orderUpdate = new OrderPaymentStatusUpdateDto();
             orderUpdate.setOrderId(orderId);
