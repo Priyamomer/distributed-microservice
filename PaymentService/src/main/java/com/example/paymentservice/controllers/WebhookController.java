@@ -3,6 +3,7 @@ package com.example.paymentservice.controllers;
 import com.example.paymentservice.dtos.OrderPaymentStatusUpdateDto;
 import com.example.paymentservice.dtos.OrderStatus;
 import com.google.gson.GsonBuilder;
+import com.stripe.model.Charge;
 import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.PaymentLink;
@@ -56,6 +57,13 @@ WebhookController {
                     PaymentIntent paymentIntent = (PaymentIntent) event.getData().getObject();
                     String orderId = paymentIntent.getMetadata().get("OrderId");
 
+                    updateOrderStatus(orderId, OrderStatus.PAYMENT_SUCCESS);
+                    break;
+                }
+                case "charge.succeeded": {
+                    Charge charge = (Charge) event.getData().getObject();
+                    String orderId = charge.getMetadata().get("OrderId");
+                    System.out.println("Charge succeeded for Order ID: " + orderId);
                     updateOrderStatus(orderId, OrderStatus.PAYMENT_SUCCESS);
                     break;
                 }
