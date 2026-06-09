@@ -16,9 +16,9 @@ public class SecurityConfig {
                 .authorizeExchange(authorize -> authorize
 
                         .pathMatchers(HttpMethod.POST, "/v1/auth/**").permitAll()
-                        .pathMatchers(HttpMethod.GET, "/v1/roles/**").authenticated()
+                        .pathMatchers(HttpMethod.GET, "/v1/roles/**").permitAll()
                         .pathMatchers(HttpMethod.POST, "/v1/roles/**").permitAll()
-                        .pathMatchers(HttpMethod.GET, "/v1/users/**").authenticated()
+                        .pathMatchers(HttpMethod.GET, "/v1/users/**").permitAll()
                         .pathMatchers(HttpMethod.POST, "/v1/users/**").permitAll()
 
                         .pathMatchers(HttpMethod.GET, "/v1/products/**").permitAll()
@@ -34,7 +34,7 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.DELETE, "/v1/cart/**").permitAll()
 
 
-                        .pathMatchers(HttpMethod.GET, "/v1/orders/**").authenticated()
+                        .pathMatchers(HttpMethod.GET, "/v1/orders/**").permitAll()
                         .pathMatchers(HttpMethod.POST, "/v1/orders/**").permitAll()
                         .pathMatchers(HttpMethod.PATCH, "/v1/orders/**").permitAll()
 
