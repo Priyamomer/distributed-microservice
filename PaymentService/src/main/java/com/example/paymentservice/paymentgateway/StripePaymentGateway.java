@@ -67,7 +67,8 @@ public class StripePaymentGateway implements PaymentGateway {
 
         paymentLinkParams.put("payment_intent_data", linkPaymentIntent);
 
-
+        // Required for Stripe India accounts (RBI compliance)
+        paymentLinkParams.put("billing_address_collection", "required");
 
         PaymentLink paymentLink = PaymentLink.create(paymentLinkParams);
         System.out.println("Created Payment Link ID: " + paymentLink.getId());
