@@ -56,7 +56,6 @@ spring:
             - Method=GET
           uri: ${USERSERVICE_URI:lb://userservice}
           filters:
-            - TokenRelay=
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
@@ -81,7 +80,6 @@ spring:
             - Method=GET
           uri: ${USERSERVICE_URI:lb://userservice}
           filters:
-            - TokenRelay=
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
