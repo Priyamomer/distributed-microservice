@@ -606,3 +606,105 @@
 **Overall: 20/22 endpoints working**
 
 ---
+
+## Run: 2026-06-09 11:15:52 UTC  |  Gateway: http://62.238.15.118:30000  |  Auth: http://62.238.15.118:30200
+
+| Service | Working Endpoints | Total Endpoints | Status |
+|---|:---:|:---:|---|
+| User Service | 6 | 6 | ✅ ALL PASS |
+| Product Service | 6 | 6 | ✅ ALL PASS |
+| Cart Service | 4 | 4 | ✅ ALL PASS |
+| Order Service | 3 | 3 | ✅ ALL PASS |
+| Payment Service | 2 | 2 | ✅ ALL PASS |
+| Notification Service | 0 | 1 | ❌ ALL FAIL |
+
+### Endpoint Detail
+
+**User Service**
+- ✅ `POST /v1/auth/signup`
+- ✅ `POST /v1/auth/password`
+- ✅ `POST /v1/roles`
+- ✅ `GET /v1/roles`
+- ✅ `GET /v1/users/1`
+- ✅ `POST /v1/users/1/roles`
+
+**Product Service**
+- ✅ `POST /v1/products`
+- ✅ `GET /v1/products`
+- ✅ `GET /v1/products/719b0efc-59b3-4ba3-a7e4-7ea181a2bf0c`
+- ✅ `PATCH /v1/products`
+- ✅ `POST /v1/products/search`
+- ✅ `DELETE /v1/products/2446ea4e-b965-49a7-a6b8-c24471744d97`
+
+**Cart Service**
+- ✅ `GET /v1/cart/1`
+- ✅ `POST /v1/cart/1/items`
+- ✅ `PATCH /v1/cart/1/items`
+- ✅ `DELETE /v1/cart/1/items`
+
+**Order Service**
+- ✅ `POST /v1/orders`
+- ✅ `GET /v1/orders/1`
+- ✅ `PATCH /v1/orders/payment-status`
+
+**Payment Service**
+- ✅ `POST /v1/payments`
+- ✅ `POST /v1/payments/webhooks`
+
+**Notification Service**
+- ❌ `POST /v1/notifications/send-message`  _(0 passed, 3 failed)_
+
+**Overall: 21/22 endpoints working**
+
+---
+
+## Run: 2026-06-09 11:16:53 UTC  |  Gateway: http://62.238.15.118:30000  |  Auth: http://62.238.15.118:30200
+
+| Service | Working Endpoints | Total Endpoints | Status |
+|---|:---:|:---:|---|
+| User Service | 6 | 6 | ✅ ALL PASS |
+| Product Service | 6 | 6 | ✅ ALL PASS |
+| Cart Service | 4 | 4 | ✅ ALL PASS |
+| Order Service | 3 | 3 | ✅ ALL PASS |
+| Payment Service | 2 | 2 | ✅ ALL PASS |
+| Notification Service | 0 | 1 | ❌ ALL FAIL |
+
+### Endpoint Detail
+
+**User Service**
+- ✅ `POST /v1/auth/signup`
+- ✅ `POST /v1/auth/password`
+- ✅ `POST /v1/roles`
+- ✅ `GET /v1/roles`
+- ✅ `GET /v1/users/1`
+- ✅ `POST /v1/users/1/roles`
+
+**Product Service**
+- ✅ `POST /v1/products`
+- ✅ `GET /v1/products`
+- ✅ `GET /v1/products/9c6aa153-d32e-4249-8e9b-fd32088738a2`
+- ✅ `PATCH /v1/products`
+- ✅ `POST /v1/products/search`
+- ✅ `DELETE /v1/products/97b71fd1-b22c-44ab-af81-86ee00a41c43`
+
+**Cart Service**
+- ✅ `GET /v1/cart/1`
+- ✅ `POST /v1/cart/1/items`
+- ✅ `PATCH /v1/cart/1/items`
+- ✅ `DELETE /v1/cart/1/items`
+
+**Order Service**
+- ✅ `POST /v1/orders`
+- ✅ `GET /v1/orders/1`
+- ✅ `PATCH /v1/orders/payment-status`
+
+**Payment Service**
+- ✅ `POST /v1/payments`
+- ✅ `POST /v1/payments/webhooks`
+
+**Notification Service**
+- ❌ `POST /v1/notifications/send-message`  _(0 passed, 3 failed)_
+
+**Overall: 21/22 endpoints working**
+
+---
