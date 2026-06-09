@@ -6,6 +6,7 @@ import com.stripe.model.PaymentIntent;
 import com.stripe.model.PaymentLink;
 import com.stripe.model.Price;
 import com.stripe.model.Product;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,8 +20,11 @@ public class StripePaymentGateway implements PaymentGateway {
     private static final String CURRENCY = "inr";
     private static final String REDIRECT_URL = "https://scaler.com/";
 
+    @Value("${stripe.api-key}")
+    private String stripeApiKey;
+
     public String generatePaymentLink(String orderId, Long amount, String phoneNumber, String email) throws StripeException {
-        Stripe.apiKey = "";
+        Stripe.apiKey = stripeApiKey;
 
 
         Product product = createProduct(orderId);

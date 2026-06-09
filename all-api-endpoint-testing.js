@@ -301,7 +301,7 @@ async function ep_POST_products_search() {
       query       : 'test',
       pageNumber  : 0,
       itemsPerPage: 5,
-      sortParams  : [{ sortParamName: 'price', sortType: 'ASC' }],
+      sortParams  : [{ sortParamName: 'amount', sortType: 'ASC' }],
     },
   });
   assert('HTTP 200',                      r.status === 200,                         `got ${r.status}  ${r.ms}ms`);

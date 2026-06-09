@@ -2,7 +2,7 @@ package com.example.paymentservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-//CI and CD testing - 1
+//CI and CD testing - 2
 @SpringBootApplication
 public class PaymentServiceApplication {
 

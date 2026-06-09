@@ -56,6 +56,11 @@ spec:
               value: "http://62.238.15.118:30200"
             - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
               value: "http://62.238.15.118:30200/oauth2/jwks"
+            - name: STRIPE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: paymentservice-secrets
+                  key: stripe-api-key
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "10.0.0.2:9092"
 ---
