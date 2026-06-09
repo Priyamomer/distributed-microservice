@@ -19,11 +19,15 @@ import java.time.format.DateTimeFormatter;
 
 @RestController
 @RequestMapping("/v1/payments")
-public class WebhookController {
+public class
+WebhookController {
     private final RestTemplate restTemplate;
 
     @Value("${stripe.webhook-secret}")
     private String WEBHOOK_SECRET;
+
+    @Value("${order-service.url}")
+    private String orderServiceUrl;
 
     @Autowired
     WebhookController(RestTemplate restTemplate){
@@ -95,7 +99,7 @@ public class WebhookController {
                     new HttpEntity<>(orderUpdate, headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
-                    "http://ORDERSERVICE/v1/orders/payment-status",
+                    orderServiceUrl + "/v1/orders/payment-status",
                     HttpMethod.PATCH,
                     request,
                     String.class

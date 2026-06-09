@@ -18,6 +18,9 @@ stripe:
   api-key: ${STRIPE_API_KEY:}
   webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
 
+order-service:
+  url: ${ORDER_SERVICE_URL:http://orderservice:8500}
+
 server:
   port: 8600
 
