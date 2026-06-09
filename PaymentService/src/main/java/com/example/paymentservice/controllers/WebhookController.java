@@ -7,6 +7,7 @@ import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.PaymentLink;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -20,7 +21,10 @@ import java.time.format.DateTimeFormatter;
 @RequestMapping("/v1/payments")
 public class WebhookController {
     private final RestTemplate restTemplate;
-    private static final String WEBHOOK_SECRET = ""; // Add your webhook secret
+
+    @Value("${stripe.webhook-secret}")
+    private String WEBHOOK_SECRET;
+
     @Autowired
     WebhookController(RestTemplate restTemplate){
         this.restTemplate = restTemplate;

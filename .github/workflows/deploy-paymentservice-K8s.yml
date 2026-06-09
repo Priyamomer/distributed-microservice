@@ -51,6 +51,7 @@ jobs:
             --from-literal=db-username=${{ secrets.PAYMENTSERVICE_DATASOURCE_USERNAME }} \
             --from-literal=db-password=${{ secrets.PAYMENTSERVICE_DATASOURCE_PASSWORD }} \
             --from-literal=stripe-api-key=${{ secrets.STRIPE_API_KEY }} \
+            --from-literal=stripe-webhook-secret=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Deploy to k8s
